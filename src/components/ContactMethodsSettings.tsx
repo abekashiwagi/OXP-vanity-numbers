@@ -79,8 +79,8 @@ function PillButton({ label }: { label: string }) {
   )
 }
 
-const th = 'text-left font-normal text-[#6b6f76] text-[11px] px-1 py-[8px] whitespace-nowrap'
-const td = 'text-left text-[#55575c] text-[11px] px-1 py-[8px] whitespace-nowrap'
+const th = 'text-left font-normal text-[#6b6f76] text-[11px] px-3 py-[9px] whitespace-nowrap'
+const td = 'text-left text-[#55575c] text-[11px] px-3 py-[9px] whitespace-nowrap'
 
 export function ContactMethodsSettings() {
   return (
@@ -161,26 +161,26 @@ export function ContactMethodsSettings() {
             </div>
           </div>
 
-          <div className="border border-[#e6e6e9] rounded-[4px] overflow-hidden">
-            <table className="w-full border-collapse">
+          <div className="border border-[#e6e6e9] rounded-[4px] overflow-x-auto">
+            <table className="w-full min-w-[1180px] border-collapse">
               <thead>
                 <tr className="border-b border-[#e6e6e9]">
-                  <th className={`${th} pl-4 w-[10%]`}>Phone Number</th>
-                  <th className={`${th} w-[9%]`}>Type</th>
-                  <th className={`${th} w-[12%]`}>
+                  <th className={`${th} pl-4 min-w-[110px]`}>Phone Number</th>
+                  <th className={`${th} min-w-[110px]`}>Type</th>
+                  <th className={`${th} min-w-[140px]`}>
                     <span className="inline-flex items-center gap-1.5">Lead Source <HelpChip /></span>
                   </th>
-                  <th className={`${th} w-[10%]`}>Forward Preference</th>
-                  <th className={`${th} w-[11%]`}>Route Calls</th>
-                  <th className={`${th} w-[15%]`}>
+                  <th className={`${th} min-w-[130px]`}>Forward Preference</th>
+                  <th className={`${th} min-w-[130px]`}>Route Calls</th>
+                  <th className={`${th} min-w-[170px]`}>
                     <span className="inline-flex items-center gap-1.5">SMS Registration Status <HelpChip /></span>
                   </th>
-                  <th className={`${th} w-[10%]`}>
+                  <th className={`${th} min-w-[120px]`}>
                     <span className="inline-flex items-center gap-1.5">SMS <HelpChip /></span>
                   </th>
-                  <th className={`${th} w-[8%]`}>Outbound Default</th>
-                  <th className={`${th} w-[8%]`}>Expiration Date</th>
-                  <th className={`${th} w-[7%]`}>Action</th>
+                  <th className={`${th} min-w-[120px]`}>Outbound Default</th>
+                  <th className={`${th} min-w-[110px]`}>Expiration Date</th>
+                  <th className={`${th} min-w-[70px]`}>Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -191,7 +191,7 @@ export function ContactMethodsSettings() {
                     <td className={td}>{item.leadSource}</td>
                     <td className={td}>{item.forwardPreference}</td>
                     <td className={td}>{item.routeCalls}</td>
-                    <td className="px-1.5 py-[9px]">
+                    <td className="px-3 py-[9px]">
                       {item.smsStatus === 'failed' && (
                         <span className="inline-flex items-center gap-1.5">
                           <TriangleAlert className="w-[13px] h-[13px] text-[#d64541]" strokeWidth={2} />
@@ -200,7 +200,7 @@ export function ContactMethodsSettings() {
                         </span>
                       )}
                     </td>
-                    <td className="px-1.5 py-[6px]">
+                    <td className="px-3 py-[6px]">
                       <span className="inline-flex items-center gap-2.5">
                         {item.smsRegister && (
                           <button className="rounded-[4px] border border-[#cfd0d4] bg-white px-2.5 py-[3px] text-[11px] text-[#3e3f42] shadow-sm cursor-pointer hover:bg-[#f7f7f8]">
@@ -214,8 +214,8 @@ export function ContactMethodsSettings() {
                     </td>
                     <td className={td}></td>
                     <td className={td}></td>
-                    <td className="px-1.5 py-[9px]">
-                      <span className="inline-flex items-center gap-2">
+                    <td className="px-3 py-[9px]">
+                      <span className="inline-flex items-center gap-2.5">
                         <RotateCw className="w-[13px] h-[13px] text-[#4a9b62] cursor-pointer" strokeWidth={2} />
                         <Pencil className="w-[13px] h-[13px] text-[#e8c33f] cursor-pointer" strokeWidth={2} fill="#e8c33f" />
                         <EllipsisVertical className="w-[14px] h-[14px] text-[#55575c] cursor-pointer" strokeWidth={2} />
