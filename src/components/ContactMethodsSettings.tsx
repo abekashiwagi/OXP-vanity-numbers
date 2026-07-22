@@ -1,9 +1,12 @@
+import { useState } from 'react'
 import {
   X,
   ChevronRight,
+  ChevronDown,
   Info,
   CirclePlus,
   Pencil,
+  Phone,
   RotateCw,
   EllipsisVertical,
   Settings,
@@ -85,10 +88,185 @@ function PillButton({ label }: { label: string }) {
   )
 }
 
+function YesNoToggle({ value, onChange }: { value: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <button
+      onClick={() => onChange(!value)}
+      className={`relative inline-flex items-center h-[24px] w-[58px] rounded-full transition-colors cursor-pointer select-none ${
+        value ? 'bg-[#3e7d4e]' : 'bg-[#b9babc]'
+      }`}
+    >
+      <span
+        className={`absolute text-[11px] font-medium ${
+          value ? 'left-[10px] text-white' : 'right-[10px] text-[#f2f2f2]'
+        }`}
+      >
+        {value ? 'Yes' : 'No'}
+      </span>
+      <span
+        className={`absolute h-[18px] w-[18px] rounded-full bg-white shadow transition-all ${
+          value ? 'right-[3px]' : 'left-[3px]'
+        }`}
+      />
+    </button>
+  )
+}
+
+type EditingRow = { row: VanityNumber; section: 'callTracking' | 'oxp' }
+
+const callTrackingTypeOptions = ['Lead', 'Primary', 'Maintenance']
+const oxpTypeOptions = [
+  'ELI+ Leasing AI',
+  'ELI+ Renewals AI',
+  'ELI+ Payments AI',
+  'ELI+ Super Agent',
+  'Maintenance AI',
+  'SMS Only',
+  'Voice & SMS',
+]
+const forwardPreferenceOptions = ['Office Contact', 'Property Contacts', 'Call Center']
+
+function ModalSelect({
+  value,
+  options,
+  onChange,
+}: {
+  value: string
+  options: string[]
+  onChange: (v: string) => void
+}) {
+  return (
+    <div className="relative w-[300px]">
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full appearance-none rounded-[6px] border border-[#c9cacd] bg-white pl-3 pr-8 py-[7px] text-[13px] text-[#2f3033] cursor-pointer focus:outline-none focus:border-[#8ab2e0]"
+      >
+        {options.map((opt) => (
+          <option key={opt} value={opt}>{opt}</option>
+        ))}
+      </select>
+      <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-[14px] h-[14px] text-[#55575c]" strokeWidth={2} />
+    </div>
+  )
+}
+
+function ModalHelpChip() {
+  return (
+    <span className="inline-flex items-center justify-center w-[18px] h-[18px] rounded-[4px] border border-[#a9c8ef] bg-white text-[#4285d6] text-[11px] font-semibold leading-none cursor-help select-none">
+      ?
+    </span>
+  )
+}
+
+function EditVanityNumberModal({ editing, onClose }: { editing: EditingRow; onClose: () => void }) {
+  const [type, setType] = useState(editing.row.type)
+  const [forwardPreference, setForwardPreference] = useState('Office Contact')
+  const [useForSms, setUseForSms] = useState(true)
+  const [outboundDefault, setOutboundDefault] = useState(false)
+  const [clickToCall, setClickToCall] = useState(false)
+
+  const typeOptions = editing.section === 'oxp' ? oxpTypeOptions : callTrackingTypeOptions
+  const options = typeOptions.includes(type) ? typeOptions : [type, ...typeOptions]
+
+  const labelCls = 'w-[38%] shrink-0 pr-4 text-right text-[13px] text-[#2f3033]'
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4" onClick={onClose}>
+      <div
+        className="w-full max-w-[680px] rounded-[6px] bg-white shadow-2xl overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex items-stretch justify-between bg-[#1f1f21]">
+          <h3 className="px-4 py-3 text-[14px] font-bold text-white">Edit Vanity Number</h3>
+          <div className="flex items-stretch">
+            <div className="flex items-center pr-3">
+              <span className="inline-flex items-center justify-center w-[20px] h-[20px] rounded-[3px] border border-[#8a8a8e] text-white text-[12px] font-semibold cursor-help select-none">
+                ?
+              </span>
+            </div>
+            <button
+              onClick={onClose}
+              className="flex items-center gap-2 bg-[#3a3a3d] px-4 text-[13px] text-white cursor-pointer hover:bg-[#4a4a4d]"
+            >
+              <X className="w-[14px] h-[14px]" strokeWidth={2} />
+              Close
+            </button>
+          </div>
+        </div>
+
+        {/* Body */}
+        <div className="px-4 pt-4 pb-6">
+          {/* Retest banner */}
+          <div className="flex justify-end rounded-[8px] bg-[#f5f5f6] px-3 py-3 mb-4">
+            <button className="inline-flex items-center gap-2 rounded-[8px] border border-[#c9cacd] bg-white px-3.5 py-[7px] text-[13px] text-[#2f3033] shadow-sm cursor-pointer hover:bg-[#f7f7f8]">
+              <Phone className="w-[14px] h-[14px]" strokeWidth={1.75} />
+              Retest Vanity Number
+            </button>
+          </div>
+
+          {/* Form rows */}
+          <div className="flex items-center bg-[#f8f8f9] py-2.5">
+            <label className={labelCls}>Phone Number Type:</label>
+            <ModalSelect value={type} options={options} onChange={setType} />
+          </div>
+          <div className="flex items-center bg-white py-2.5">
+            <label className={labelCls}>Forward Preference:</label>
+            <ModalSelect value={forwardPreference} options={forwardPreferenceOptions} onChange={setForwardPreference} />
+          </div>
+
+          <div className="h-[14px]" />
+
+          <div className="flex items-center bg-[#f8f8f9] py-3">
+            <label className={labelCls}>Use for SMS:</label>
+            <YesNoToggle value={useForSms} onChange={setUseForSms} />
+            <span className="ml-auto pr-3"><ModalHelpChip /></span>
+          </div>
+          <div className="flex items-center bg-white py-3">
+            <label className={labelCls}>Outbound Default:</label>
+            <YesNoToggle value={outboundDefault} onChange={setOutboundDefault} />
+            <span className="ml-auto pr-3"><ModalHelpChip /></span>
+          </div>
+          <div className="flex items-center bg-[#f8f8f9] py-3">
+            <label className={labelCls}>Click to Call:</label>
+            <YesNoToggle value={clickToCall} onChange={setClickToCall} />
+            <span className="ml-auto pr-3"><ModalHelpChip /></span>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="flex items-center justify-between bg-[#efeff0] border-t border-[#dededf] px-4 py-3">
+          <button
+            onClick={onClose}
+            className="rounded-[6px] border border-[#c9cacd] bg-white px-5 py-[8px] text-[13px] text-[#2f3033] shadow-sm cursor-pointer hover:bg-[#f7f7f8]"
+          >
+            Delete
+          </button>
+          <div className="flex items-center gap-2.5">
+            <button
+              onClick={onClose}
+              className="rounded-[6px] bg-[#47835a] px-7 py-[8px] text-[14px] text-white cursor-pointer hover:bg-[#3e7450]"
+            >
+              Save
+            </button>
+            <span className="text-[13px] text-[#55575c]">
+              or{' '}
+              <button onClick={onClose} className="text-[#4285d6] cursor-pointer hover:underline">
+                Cancel
+              </button>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 const th = 'text-left font-normal text-[#6b6f76] text-[11px] px-3 py-[9px] whitespace-nowrap'
 const td = 'text-left text-[#55575c] text-[11px] px-3 py-[9px] whitespace-nowrap'
 
-function VanityNumbersTable({ rows }: { rows: VanityNumber[] }) {
+function VanityNumbersTable({ rows, onEdit }: { rows: VanityNumber[]; onEdit: (row: VanityNumber) => void }) {
   return (
     <div className="border border-[#e6e6e9] rounded-[4px] overflow-x-auto">
       <table className="w-full min-w-[1180px] border-collapse">
@@ -146,7 +324,12 @@ function VanityNumbersTable({ rows }: { rows: VanityNumber[] }) {
               <td className="px-3 py-[9px]">
                 <span className="inline-flex items-center gap-2.5">
                   <RotateCw className="w-[13px] h-[13px] text-[#4a9b62] cursor-pointer" strokeWidth={2} />
-                  <Pencil className="w-[13px] h-[13px] text-[#e8c33f] cursor-pointer" strokeWidth={2} fill="#e8c33f" />
+                  <Pencil
+                    className="w-[13px] h-[13px] text-[#e8c33f] cursor-pointer"
+                    strokeWidth={2}
+                    fill="#e8c33f"
+                    onClick={() => onEdit(item)}
+                  />
                   <EllipsisVertical className="w-[14px] h-[14px] text-[#55575c] cursor-pointer" strokeWidth={2} />
                 </span>
               </td>
@@ -159,8 +342,11 @@ function VanityNumbersTable({ rows }: { rows: VanityNumber[] }) {
 }
 
 export function ContactMethodsSettings() {
+  const [editing, setEditing] = useState<EditingRow | null>(null)
+
   return (
     <div className="min-h-screen bg-[#f0f0f1]">
+      {editing && <EditVanityNumberModal key={editing.row.phone} editing={editing} onClose={() => setEditing(null)} />}
       {/* Top app bar */}
       <header className="bg-[#3c3c3e] h-[30px] flex items-center justify-between pl-3 pr-4 sticky top-0 z-10">
         <div className="flex items-center gap-2">
@@ -237,7 +423,10 @@ export function ContactMethodsSettings() {
             </div>
           </div>
 
-          <VanityNumbersTable rows={callTrackingNumbers} />
+          <VanityNumbersTable
+            rows={callTrackingNumbers}
+            onEdit={(row) => setEditing({ row, section: 'callTracking' })}
+          />
         </section>
 
         {/* OXP Communication Vanity Numbers */}
@@ -247,7 +436,10 @@ export function ContactMethodsSettings() {
             <PillButton label="Request Vanity Number" />
           </div>
 
-          <VanityNumbersTable rows={oxpCommunicationNumbers} />
+          <VanityNumbersTable
+            rows={oxpCommunicationNumbers}
+            onEdit={(row) => setEditing({ row, section: 'oxp' })}
+          />
         </section>
 
         {/* Greetings & Voicemail */}
