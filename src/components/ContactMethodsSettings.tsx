@@ -272,12 +272,12 @@ function OxpModalBody({ row }: { row: VanityNumber }) {
         <span className="ml-auto pr-3"><ModalHelpChip /></span>
       </div>
       <div className="flex items-center bg-white py-3">
-        <label className={labelCls}>Outbound Default:</label>
+        <label className={labelCls}>Use For Outbound Default:</label>
         <YesNoToggle value={outboundDefault} onChange={setOutboundDefault} />
         <span className="ml-auto pr-3"><ModalHelpChip /></span>
       </div>
       <div className="flex items-center bg-[#f8f8f9] py-3">
-            <label className={labelCls}>Voice:</label>
+            <label className={labelCls}>Use For Voice (Click to Call):</label>
             <YesNoToggle value={clickToCall} onChange={setClickToCall} />
             <span className="ml-auto pr-3"><ModalHelpChip /></span>
           </div>
