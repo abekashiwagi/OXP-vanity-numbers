@@ -310,8 +310,11 @@ function AddVanityNumberModal({ section, onClose }: { section: 'callTracking' | 
   const [areaCode, setAreaCode] = useState('')
   const [forwardPreference, setForwardPreference] = useState('Office Contacts')
   const [useForSms, setUseForSms] = useState(false)
+  const [useForVoice, setUseForVoice] = useState(false)
+  const [outboundDefault, setOutboundDefault] = useState(false)
   const [expirationDate, setExpirationDate] = useState('')
 
+  const isEliType = type.startsWith('ELI+')
   const labelCls = 'w-[38%] shrink-0 pr-4 text-right text-[13px] text-[#2f3033]'
 
   return (
@@ -362,48 +365,81 @@ function AddVanityNumberModal({ section, onClose }: { section: 'callTracking' | 
             <label className={labelCls}>Phone Number Type:</label>
             <ModalSelect value={type} options={typeOptions} onChange={setType} />
           </div>
-          <div className="flex items-center bg-[#f8f8f9] py-3">
-            <label className={labelCls}>Toll-Free:</label>
-            <YesNoToggle value={tollFree} onChange={setTollFree} />
-          </div>
-          <div className="flex items-center bg-white py-2.5">
-            <label className={labelCls}>Area Code:</label>
-            <input
-              type="text"
-              maxLength={3}
-              value={areaCode}
-              onChange={(e) => setAreaCode(e.target.value.replace(/\D/g, ''))}
-              className="w-[70px] rounded-[6px] border border-[#c9cacd] bg-white px-3 py-[7px] text-[13px] text-[#2f3033] focus:outline-none focus:border-[#8ab2e0] text-center"
-            />
-          </div>
-          <div className="flex items-center bg-[#f8f8f9] py-2.5">
-            <label className={labelCls}>Forward Preference:</label>
-            <ModalSelect value={forwardPreference} options={['Office Contacts', ...forwardPreferenceOptions.slice(1)]} onChange={setForwardPreference} />
-          </div>
-          <div className="flex items-center bg-white py-3">
-            <label className={labelCls}>Use for SMS:</label>
-            <YesNoToggle value={useForSms} onChange={setUseForSms} />
-            <span className="ml-auto pr-3"><ModalHelpChip /></span>
-          </div>
-          {isCallTracking && (
-            <div className="flex items-center bg-[#f8f8f9] py-3">
-              <label className={labelCls}>Expiration Date:</label>
-              <div className="flex items-center gap-3">
+
+          {isEliType ? (
+            <>
+              <div className="flex items-center bg-[#f8f8f9] py-2.5">
+                <label className={labelCls}>Area Code:</label>
                 <input
-                  type="date"
-                  value={expirationDate}
-                  onChange={(e) => setExpirationDate(e.target.value)}
-                  className="rounded-[6px] border border-[#c9cacd] bg-white px-3 py-[6px] text-[13px] text-[#2f3033] focus:outline-none focus:border-[#8ab2e0] w-[180px]"
+                  type="text"
+                  maxLength={3}
+                  value={areaCode}
+                  onChange={(e) => setAreaCode(e.target.value.replace(/\D/g, ''))}
+                  className="w-[70px] rounded-[6px] border border-[#c9cacd] bg-white px-3 py-[7px] text-[13px] text-[#2f3033] focus:outline-none focus:border-[#8ab2e0] text-center"
                 />
-                <button
-                  onClick={() => setExpirationDate('')}
-                  className="inline-flex items-center gap-1.5 rounded-[6px] border border-[#c9cacd] bg-white px-3 py-[6px] text-[13px] text-[#2f3033] shadow-sm cursor-pointer hover:bg-[#f7f7f8]"
-                >
-                  <X className="w-[12px] h-[12px]" strokeWidth={2} />
-                  Remove Expiration
-                </button>
               </div>
-            </div>
+              <div className="flex items-center bg-white py-3">
+                <label className={labelCls}>Use for Voice:</label>
+                <YesNoToggle value={useForVoice} onChange={setUseForVoice} />
+                <span className="ml-auto pr-3"><ModalHelpChip /></span>
+              </div>
+              <div className="flex items-center bg-[#f8f8f9] py-3">
+                <label className={labelCls}>Use for Outbound Default:</label>
+                <YesNoToggle value={outboundDefault} onChange={setOutboundDefault} />
+                <span className="ml-auto pr-3"><ModalHelpChip /></span>
+              </div>
+              <div className="flex items-center bg-white py-3">
+                <label className={labelCls}>Use for SMS:</label>
+                <YesNoToggle value={useForSms} onChange={setUseForSms} />
+                <span className="ml-auto pr-3"><ModalHelpChip /></span>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="flex items-center bg-[#f8f8f9] py-3">
+                <label className={labelCls}>Toll-Free:</label>
+                <YesNoToggle value={tollFree} onChange={setTollFree} />
+              </div>
+              <div className="flex items-center bg-white py-2.5">
+                <label className={labelCls}>Area Code:</label>
+                <input
+                  type="text"
+                  maxLength={3}
+                  value={areaCode}
+                  onChange={(e) => setAreaCode(e.target.value.replace(/\D/g, ''))}
+                  className="w-[70px] rounded-[6px] border border-[#c9cacd] bg-white px-3 py-[7px] text-[13px] text-[#2f3033] focus:outline-none focus:border-[#8ab2e0] text-center"
+                />
+              </div>
+              <div className="flex items-center bg-[#f8f8f9] py-2.5">
+                <label className={labelCls}>Forward Preference:</label>
+                <ModalSelect value={forwardPreference} options={['Office Contacts', ...forwardPreferenceOptions.slice(1)]} onChange={setForwardPreference} />
+              </div>
+              <div className="flex items-center bg-white py-3">
+                <label className={labelCls}>Use for SMS:</label>
+                <YesNoToggle value={useForSms} onChange={setUseForSms} />
+                <span className="ml-auto pr-3"><ModalHelpChip /></span>
+              </div>
+              {isCallTracking && (
+                <div className="flex items-center bg-[#f8f8f9] py-3">
+                  <label className={labelCls}>Expiration Date:</label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="date"
+                      value={expirationDate}
+                      onChange={(e) => setExpirationDate(e.target.value)}
+                      className="rounded-[6px] border border-[#c9cacd] bg-white px-3 py-[6px] text-[13px] text-[#2f3033] focus:outline-none focus:border-[#8ab2e0] w-[180px]"
+                    />
+                    <button
+                      onClick={() => setExpirationDate('')}
+                      className="inline-flex items-center gap-1.5 rounded-[6px] border border-[#c9cacd] bg-white px-3 py-[6px] text-[13px] text-[#2f3033] shadow-sm cursor-pointer hover:bg-[#f7f7f8]"
+                    >
+                      <X className="w-[12px] h-[12px]" strokeWidth={2} />
+                      Remove Expiration
+                    </button>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
 
