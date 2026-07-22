@@ -120,11 +120,10 @@ type EditingRow = { row: VanityNumber; section: 'callTracking' | 'oxp' }
 const oxpTypeOptions = [
   'ELI+ Leasing AI',
   'ELI+ Renewals AI',
-  'ELI+ Payments AI',
   'ELI+ Maintenance AI',
-  'ELI+ Super Agent',
-  'SMS Only',
-  'Voice & SMS',
+  'ELI+ Payments AI',
+  'ELI+ Super Agent Voice',
+  'SMS SMS Only',
 ]
 const forwardPreferenceOptions = ['Office Contact', 'Property Contacts', 'Call Center']
 
@@ -278,22 +277,34 @@ function OxpModalBody({ row }: { row: VanityNumber }) {
         <span className="ml-auto pr-3"><ModalHelpChip /></span>
       </div>
       <div className="flex items-center bg-[#f8f8f9] py-3">
-        <label className={labelCls}>Click to Call:</label>
-        <YesNoToggle value={clickToCall} onChange={setClickToCall} />
-        <span className="ml-auto pr-3"><ModalHelpChip /></span>
-      </div>
+            <label className={labelCls}>Voice:</label>
+            <YesNoToggle value={clickToCall} onChange={setClickToCall} />
+            <span className="ml-auto pr-3"><ModalHelpChip /></span>
+          </div>
     </div>
   )
 }
 
-const addVanityTypeOptions = [
+const addCallTrackingTypeOptions = [
   'Please Select',
   'Call Tracker Lead',
   'Call Tracker Maintenance',
   'Call Tracker Maintenance Emergency',
 ]
 
-function AddVanityNumberModal({ onClose }: { onClose: () => void }) {
+const addOxpTypeOptions = [
+  'Please Select',
+  'ELI+ Leasing AI',
+  'ELI+ Renewals AI',
+  'ELI+ Maintenance AI',
+  'ELI+ Payments AI',
+  'ELI+ Super Agent Voice',
+  'SMS SMS Only',
+]
+
+function AddVanityNumberModal({ section, onClose }: { section: 'callTracking' | 'oxp'; onClose: () => void }) {
+  const isCallTracking = section === 'callTracking'
+  const typeOptions = isCallTracking ? addCallTrackingTypeOptions : addOxpTypeOptions
   const [type, setType] = useState('Please Select')
   const [tollFree, setTollFree] = useState(false)
   const [areaCode, setAreaCode] = useState('')
@@ -349,7 +360,7 @@ function AddVanityNumberModal({ onClose }: { onClose: () => void }) {
           {/* Form rows */}
           <div className="flex items-center bg-white py-2.5">
             <label className={labelCls}>Phone Number Type:</label>
-            <ModalSelect value={type} options={addVanityTypeOptions} onChange={setType} />
+            <ModalSelect value={type} options={typeOptions} onChange={setType} />
           </div>
           <div className="flex items-center bg-[#f8f8f9] py-3">
             <label className={labelCls}>Toll-Free:</label>
@@ -374,24 +385,26 @@ function AddVanityNumberModal({ onClose }: { onClose: () => void }) {
             <YesNoToggle value={useForSms} onChange={setUseForSms} />
             <span className="ml-auto pr-3"><ModalHelpChip /></span>
           </div>
-          <div className="flex items-center bg-[#f8f8f9] py-3">
-            <label className={labelCls}>Expiration Date:</label>
-            <div className="flex items-center gap-3">
-              <input
-                type="date"
-                value={expirationDate}
-                onChange={(e) => setExpirationDate(e.target.value)}
-                className="rounded-[6px] border border-[#c9cacd] bg-white px-3 py-[6px] text-[13px] text-[#2f3033] focus:outline-none focus:border-[#8ab2e0] w-[180px]"
-              />
-              <button
-                onClick={() => setExpirationDate('')}
-                className="inline-flex items-center gap-1.5 rounded-[6px] border border-[#c9cacd] bg-white px-3 py-[6px] text-[13px] text-[#2f3033] shadow-sm cursor-pointer hover:bg-[#f7f7f8]"
-              >
-                <X className="w-[12px] h-[12px]" strokeWidth={2} />
-                Remove Expiration
-              </button>
+          {isCallTracking && (
+            <div className="flex items-center bg-[#f8f8f9] py-3">
+              <label className={labelCls}>Expiration Date:</label>
+              <div className="flex items-center gap-3">
+                <input
+                  type="date"
+                  value={expirationDate}
+                  onChange={(e) => setExpirationDate(e.target.value)}
+                  className="rounded-[6px] border border-[#c9cacd] bg-white px-3 py-[6px] text-[13px] text-[#2f3033] focus:outline-none focus:border-[#8ab2e0] w-[180px]"
+                />
+                <button
+                  onClick={() => setExpirationDate('')}
+                  className="inline-flex items-center gap-1.5 rounded-[6px] border border-[#c9cacd] bg-white px-3 py-[6px] text-[13px] text-[#2f3033] shadow-sm cursor-pointer hover:bg-[#f7f7f8]"
+                >
+                  <X className="w-[12px] h-[12px]" strokeWidth={2} />
+                  Remove Expiration
+                </button>
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Footer */}
@@ -556,12 +569,12 @@ function VanityNumbersTable({ rows, onEdit }: { rows: VanityNumber[]; onEdit: (r
 
 export function ContactMethodsSettings() {
   const [editing, setEditing] = useState<EditingRow | null>(null)
-  const [showAddModal, setShowAddModal] = useState(false)
+  const [addModalSection, setAddModalSection] = useState<'callTracking' | 'oxp' | null>(null)
 
   return (
     <div className="min-h-screen bg-[#f0f0f1]">
       {editing && <EditVanityNumberModal key={editing.row.phone} editing={editing} onClose={() => setEditing(null)} />}
-      {showAddModal && <AddVanityNumberModal onClose={() => setShowAddModal(false)} />}
+      {addModalSection && <AddVanityNumberModal section={addModalSection} onClose={() => setAddModalSection(null)} />}
       {/* Top app bar */}
       <header className="bg-[#3c3c3e] h-[30px] flex items-center justify-between pl-3 pr-4 sticky top-0 z-10">
         <div className="flex items-center gap-2">
@@ -624,7 +637,7 @@ export function ContactMethodsSettings() {
         <section className="bg-white border border-[#e3e3e6] rounded-[6px] px-3.5 pt-3 pb-3.5 mb-4">
           <div className="flex items-center justify-between mb-3 pl-1">
             <SectionTitle title="Call Tracking Vanity Numbers" />
-            <PillButton label="Request Vanity Number" onClick={() => setShowAddModal(true)} />
+            <PillButton label="Request Vanity Number" onClick={() => setAddModalSection('callTracking')} />
           </div>
 
           {/* Info banner */}
@@ -648,7 +661,7 @@ export function ContactMethodsSettings() {
         <section className="bg-white border border-[#e3e3e6] rounded-[6px] px-3.5 pt-3 pb-3.5 mb-4">
           <div className="flex items-center justify-between mb-3 pl-1">
             <SectionTitle title="OXP Communication Vanity Numbers" />
-            <PillButton label="Request Vanity Number" />
+            <PillButton label="Request Vanity Number" onClick={() => setAddModalSection('oxp')} />
           </div>
 
           <VanityNumbersTable
