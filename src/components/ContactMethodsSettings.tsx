@@ -302,9 +302,19 @@ const addOxpTypeOptions = [
   'SMS SMS Only',
 ]
 
+function generateNumbers(code: string) {
+  const cities = ['Casper, WY', 'Sheridan, WY', 'Greenriver, US', ', US', 'Sheridan, WY', 'Laramie, WY', ', US', 'Gillette, US']
+  return cities.map((city, i) => ({
+    number: `(${code || '307'}) ${String(Math.floor(Math.random() * 900 + 100))}-${String(Math.floor(Math.random() * 9000 + 1000))}`,
+    city,
+    id: i,
+  }))
+}
+
 function AddVanityNumberModal({ section, onClose }: { section: 'callTracking' | 'oxp'; onClose: () => void }) {
   const isCallTracking = section === 'callTracking'
   const typeOptions = isCallTracking ? addCallTrackingTypeOptions : addOxpTypeOptions
+  const [step, setStep] = useState<1 | 2>(1)
   const [type, setType] = useState('Please Select')
   const [tollFree, setTollFree] = useState(false)
   const [areaCode, setAreaCode] = useState('')
@@ -313,9 +323,25 @@ function AddVanityNumberModal({ section, onClose }: { section: 'callTracking' | 
   const [useForVoice, setUseForVoice] = useState(false)
   const [outboundDefault, setOutboundDefault] = useState(false)
   const [expirationDate, setExpirationDate] = useState('')
+  const [availableNumbers, setAvailableNumbers] = useState<ReturnType<typeof generateNumbers>>([])
+  const [selectedNumber, setSelectedNumber] = useState<number | null>(null)
+  const [step2AreaCode, setStep2AreaCode] = useState('')
 
   const isEliType = type.startsWith('ELI+')
   const labelCls = 'w-[38%] shrink-0 pr-4 text-right text-[13px] text-[#2f3033]'
+
+  function handleSubmitStep1() {
+    const code = areaCode || '307'
+    setStep2AreaCode(code)
+    setAvailableNumbers(generateNumbers(code))
+    setStep(2)
+  }
+
+  function handleRefreshNumbers() {
+    const code = step2AreaCode || '307'
+    setAvailableNumbers(generateNumbers(code))
+    setSelectedNumber(null)
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4" onClick={onClose}>
@@ -346,99 +372,154 @@ function AddVanityNumberModal({ section, onClose }: { section: 'callTracking' | 
         <div className="px-4 pt-4 pb-6">
           {/* Stepper */}
           <div className="flex items-stretch mb-5">
-            <div className="relative flex items-center bg-[#c0392b] text-white text-[12px] font-semibold pl-4 pr-6 py-[7px]">
+            <div className={`relative flex items-center text-[12px] font-semibold pl-4 pr-6 py-[7px] ${step >= 1 ? 'bg-[#c0392b] text-white' : 'bg-[#e8e8ea] text-[#55575c]'}`}>
               Select Preferences
               <div className="absolute -right-[14px] top-0 h-full w-[14px] overflow-hidden">
-                <div className="absolute top-1/2 -translate-y-1/2 -left-[14px] w-[28px] h-[28px] rotate-45 bg-[#c0392b]" />
+                <div className={`absolute top-1/2 -translate-y-1/2 -left-[14px] w-[28px] h-[28px] rotate-45 ${step >= 1 ? 'bg-[#c0392b]' : 'bg-[#e8e8ea]'}`} />
               </div>
             </div>
-            <div className="relative flex items-center bg-[#e8e8ea] text-[#55575c] text-[12px] pl-6 pr-6 py-[7px] ml-[1px]">
+            <div className={`relative flex items-center text-[12px] pl-6 pr-6 py-[7px] ml-[1px] ${step === 2 ? 'bg-[#c0392b] text-white font-semibold' : 'bg-[#e8e8ea] text-[#55575c]'}`}>
               Request Number
               <div className="absolute -right-[14px] top-0 h-full w-[14px] overflow-hidden">
-                <div className="absolute top-1/2 -translate-y-1/2 -left-[14px] w-[28px] h-[28px] rotate-45 bg-[#e8e8ea]" />
+                <div className={`absolute top-1/2 -translate-y-1/2 -left-[14px] w-[28px] h-[28px] rotate-45 ${step === 2 ? 'bg-[#c0392b]' : 'bg-[#e8e8ea]'}`} />
               </div>
             </div>
           </div>
 
-          {/* Form rows */}
-          <div className="flex items-center bg-white py-2.5">
-            <label className={labelCls}>Phone Number Type:</label>
-            <ModalSelect value={type} options={typeOptions} onChange={setType} />
-          </div>
-
-          {isEliType ? (
+          {step === 1 ? (
             <>
-              <div className="flex items-center bg-[#f8f8f9] py-2.5">
-                <label className={labelCls}>Area Code:</label>
-                <input
-                  type="text"
-                  maxLength={3}
-                  value={areaCode}
-                  onChange={(e) => setAreaCode(e.target.value.replace(/\D/g, ''))}
-                  className="w-[70px] rounded-[6px] border border-[#c9cacd] bg-white px-3 py-[7px] text-[13px] text-[#2f3033] focus:outline-none focus:border-[#8ab2e0] text-center"
-                />
+              {/* Step 1: Select Preferences */}
+              <div className="flex items-center bg-white py-2.5">
+                <label className={labelCls}>Phone Number Type:</label>
+                <ModalSelect value={type} options={typeOptions} onChange={setType} />
               </div>
-              <div className="flex items-center bg-white py-3">
-                <label className={labelCls}>Use for Voice:</label>
-                <YesNoToggle value={useForVoice} onChange={setUseForVoice} />
-                <span className="ml-auto pr-3"><ModalHelpChip /></span>
-              </div>
-              <div className="flex items-center bg-[#f8f8f9] py-3">
-                <label className={labelCls}>Use for Outbound Default:</label>
-                <YesNoToggle value={outboundDefault} onChange={setOutboundDefault} />
-                <span className="ml-auto pr-3"><ModalHelpChip /></span>
-              </div>
-              <div className="flex items-center bg-white py-3">
-                <label className={labelCls}>Use for SMS:</label>
-                <YesNoToggle value={useForSms} onChange={setUseForSms} />
-                <span className="ml-auto pr-3"><ModalHelpChip /></span>
-              </div>
+
+              {isEliType ? (
+                <>
+                  <div className="flex items-center bg-[#f8f8f9] py-2.5">
+                    <label className={labelCls}>Area Code:</label>
+                    <input
+                      type="text"
+                      maxLength={3}
+                      value={areaCode}
+                      onChange={(e) => setAreaCode(e.target.value.replace(/\D/g, ''))}
+                      className="w-[70px] rounded-[6px] border border-[#c9cacd] bg-white px-3 py-[7px] text-[13px] text-[#2f3033] focus:outline-none focus:border-[#8ab2e0] text-center"
+                    />
+                  </div>
+                  <div className="flex items-center bg-white py-3">
+                    <label className={labelCls}>Use for Voice:</label>
+                    <YesNoToggle value={useForVoice} onChange={setUseForVoice} />
+                    <span className="ml-auto pr-3"><ModalHelpChip /></span>
+                  </div>
+                  <div className="flex items-center bg-[#f8f8f9] py-3">
+                    <label className={labelCls}>Use for Outbound Default:</label>
+                    <YesNoToggle value={outboundDefault} onChange={setOutboundDefault} />
+                    <span className="ml-auto pr-3"><ModalHelpChip /></span>
+                  </div>
+                  <div className="flex items-center bg-white py-3">
+                    <label className={labelCls}>Use for SMS:</label>
+                    <YesNoToggle value={useForSms} onChange={setUseForSms} />
+                    <span className="ml-auto pr-3"><ModalHelpChip /></span>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="flex items-center bg-[#f8f8f9] py-3">
+                    <label className={labelCls}>Toll-Free:</label>
+                    <YesNoToggle value={tollFree} onChange={setTollFree} />
+                  </div>
+                  <div className="flex items-center bg-white py-2.5">
+                    <label className={labelCls}>Area Code:</label>
+                    <input
+                      type="text"
+                      maxLength={3}
+                      value={areaCode}
+                      onChange={(e) => setAreaCode(e.target.value.replace(/\D/g, ''))}
+                      className="w-[70px] rounded-[6px] border border-[#c9cacd] bg-white px-3 py-[7px] text-[13px] text-[#2f3033] focus:outline-none focus:border-[#8ab2e0] text-center"
+                    />
+                  </div>
+                  <div className="flex items-center bg-[#f8f8f9] py-2.5">
+                    <label className={labelCls}>Forward Preference:</label>
+                    <ModalSelect value={forwardPreference} options={['Office Contacts', ...forwardPreferenceOptions.slice(1)]} onChange={setForwardPreference} />
+                  </div>
+                  <div className="flex items-center bg-white py-3">
+                    <label className={labelCls}>Use for SMS:</label>
+                    <YesNoToggle value={useForSms} onChange={setUseForSms} />
+                    <span className="ml-auto pr-3"><ModalHelpChip /></span>
+                  </div>
+                  {isCallTracking && (
+                    <div className="flex items-center bg-[#f8f8f9] py-3">
+                      <label className={labelCls}>Expiration Date:</label>
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="date"
+                          value={expirationDate}
+                          onChange={(e) => setExpirationDate(e.target.value)}
+                          className="rounded-[6px] border border-[#c9cacd] bg-white px-3 py-[6px] text-[13px] text-[#2f3033] focus:outline-none focus:border-[#8ab2e0] w-[180px]"
+                        />
+                        <button
+                          onClick={() => setExpirationDate('')}
+                          className="inline-flex items-center gap-1.5 rounded-[6px] border border-[#c9cacd] bg-white px-3 py-[6px] text-[13px] text-[#2f3033] shadow-sm cursor-pointer hover:bg-[#f7f7f8]"
+                        >
+                          <X className="w-[12px] h-[12px]" strokeWidth={2} />
+                          Remove Expiration
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
             </>
           ) : (
             <>
-              <div className="flex items-center bg-[#f8f8f9] py-3">
-                <label className={labelCls}>Toll-Free:</label>
-                <YesNoToggle value={tollFree} onChange={setTollFree} />
-              </div>
-              <div className="flex items-center bg-white py-2.5">
-                <label className={labelCls}>Area Code:</label>
+              {/* Step 2: Request Number */}
+              <div className="flex items-center gap-3 mb-4 flex-wrap">
+                <h4 className="text-[16px] font-bold text-[#2f3033]">Available Phone Numbers</h4>
+                <span className="text-[13px] text-[#55575c]">Area Code</span>
                 <input
                   type="text"
                   maxLength={3}
-                  value={areaCode}
-                  onChange={(e) => setAreaCode(e.target.value.replace(/\D/g, ''))}
-                  className="w-[70px] rounded-[6px] border border-[#c9cacd] bg-white px-3 py-[7px] text-[13px] text-[#2f3033] focus:outline-none focus:border-[#8ab2e0] text-center"
+                  value={step2AreaCode}
+                  onChange={(e) => setStep2AreaCode(e.target.value.replace(/\D/g, ''))}
+                  className="w-[60px] rounded-[4px] border border-[#c9cacd] bg-white px-2 py-[5px] text-[13px] text-[#2f3033] focus:outline-none focus:border-[#8ab2e0] text-center"
                 />
+                <button
+                  onClick={handleRefreshNumbers}
+                  className="inline-flex items-center gap-1.5 rounded-[6px] border border-[#c9cacd] bg-white px-3 py-[6px] text-[13px] text-[#2f3033] shadow-sm cursor-pointer hover:bg-[#f7f7f8]"
+                >
+                  <RotateCw className="w-[13px] h-[13px]" strokeWidth={2} />
+                  Get New Group of Numbers
+                </button>
               </div>
-              <div className="flex items-center bg-[#f8f8f9] py-2.5">
-                <label className={labelCls}>Forward Preference:</label>
-                <ModalSelect value={forwardPreference} options={['Office Contacts', ...forwardPreferenceOptions.slice(1)]} onChange={setForwardPreference} />
+
+              <div className="border border-[#e6e6e9] rounded-[4px] overflow-hidden">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="bg-[#55575c]">
+                      <th className="w-[50px]"></th>
+                      <th className="text-left text-white text-[11px] font-semibold px-3 py-2 uppercase tracking-wider">Number</th>
+                      <th className="text-left text-white text-[11px] font-semibold px-3 py-2 uppercase tracking-wider">City, ST</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {availableNumbers.map((item) => (
+                      <tr
+                        key={item.id}
+                        className={`border-b border-[#ededf0] last:border-b-0 cursor-pointer hover:bg-[#f5f5f7] ${selectedNumber === item.id ? 'bg-[#eef4fc]' : item.id % 2 === 1 ? 'bg-[#f8f8f9]' : 'bg-white'}`}
+                        onClick={() => setSelectedNumber(item.id)}
+                      >
+                        <td className="px-3 py-2.5 text-center">
+                          <div className={`w-[16px] h-[16px] rounded-full border-2 inline-flex items-center justify-center ${selectedNumber === item.id ? 'border-[#3e7d4e]' : 'border-[#b9babc]'}`}>
+                            {selectedNumber === item.id && <div className="w-[8px] h-[8px] rounded-full bg-[#3e7d4e]" />}
+                          </div>
+                        </td>
+                        <td className="px-3 py-2.5 text-[13px] text-[#2f3033]">{item.number}</td>
+                        <td className="px-3 py-2.5 text-[13px] text-[#55575c]">{item.city}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-              <div className="flex items-center bg-white py-3">
-                <label className={labelCls}>Use for SMS:</label>
-                <YesNoToggle value={useForSms} onChange={setUseForSms} />
-                <span className="ml-auto pr-3"><ModalHelpChip /></span>
-              </div>
-              {isCallTracking && (
-                <div className="flex items-center bg-[#f8f8f9] py-3">
-                  <label className={labelCls}>Expiration Date:</label>
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="date"
-                      value={expirationDate}
-                      onChange={(e) => setExpirationDate(e.target.value)}
-                      className="rounded-[6px] border border-[#c9cacd] bg-white px-3 py-[6px] text-[13px] text-[#2f3033] focus:outline-none focus:border-[#8ab2e0] w-[180px]"
-                    />
-                    <button
-                      onClick={() => setExpirationDate('')}
-                      className="inline-flex items-center gap-1.5 rounded-[6px] border border-[#c9cacd] bg-white px-3 py-[6px] text-[13px] text-[#2f3033] shadow-sm cursor-pointer hover:bg-[#f7f7f8]"
-                    >
-                      <X className="w-[12px] h-[12px]" strokeWidth={2} />
-                      Remove Expiration
-                    </button>
-                  </div>
-                </div>
-              )}
             </>
           )}
         </div>
@@ -447,7 +528,7 @@ function AddVanityNumberModal({ section, onClose }: { section: 'callTracking' | 
         <div className="flex items-center justify-end bg-[#efeff0] border-t border-[#dededf] px-4 py-3">
           <div className="flex items-center gap-2.5">
             <button
-              onClick={onClose}
+              onClick={step === 1 ? handleSubmitStep1 : onClose}
               className="rounded-[6px] bg-[#47835a] px-7 py-[8px] text-[14px] text-white cursor-pointer hover:bg-[#3e7450]"
             >
               Submit Request
