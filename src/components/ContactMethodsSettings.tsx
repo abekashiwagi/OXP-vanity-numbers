@@ -24,7 +24,7 @@ type VanityNumber = {
   smsGear: boolean
 }
 
-const vanityNumbers: VanityNumber[] = [
+const callTrackingNumbers: VanityNumber[] = [
   { phone: '(888) 743-8435', type: 'Lead', leadSource: 'Digital Ads', forwardPreference: 'Office Contacts', routeCalls: 'All Calls to Property', smsStatus: null, smsRegister: false, smsGear: false },
   { phone: '(855) 781-7319', type: 'Lead', leadSource: 'Facebook Lead Ads', forwardPreference: 'Office Contacts', routeCalls: 'All Calls to Property', smsStatus: null, smsRegister: false, smsGear: false },
   { phone: '(888) 683-8096', type: 'Lead', leadSource: 'Google Business Profile', forwardPreference: 'Office Contacts', routeCalls: 'All Calls to Property', smsStatus: null, smsRegister: false, smsGear: false },
@@ -35,9 +35,15 @@ const vanityNumbers: VanityNumber[] = [
   { phone: '(346) 538-6489', type: 'Lead', leadSource: 'Apartments.com', forwardPreference: 'Office Contacts', routeCalls: 'All Calls to Property', smsStatus: null, smsRegister: false, smsGear: false },
   { phone: '(346) 656-1919', type: 'Lead', leadSource: '', forwardPreference: 'Office Contacts', routeCalls: 'All Calls to Property', smsStatus: null, smsRegister: false, smsGear: false },
   { phone: '(346) 656-1923', type: 'Lead', leadSource: 'Zillow', forwardPreference: 'Office Contacts', routeCalls: 'All Calls to Property', smsStatus: null, smsRegister: false, smsGear: false },
+]
+
+// Numbers currently provisioned on Twilio
+const oxpCommunicationNumbers: VanityNumber[] = [
   { phone: '(948) 849-2178', type: 'ELI+ Leasing AI', leadSource: '', forwardPreference: 'Office Contacts', routeCalls: '-', smsStatus: 'failed', smsRegister: true, smsGear: true },
   { phone: '(447) 223-3385', type: 'ELI+ Renewals AI', leadSource: '', forwardPreference: 'Office Contacts', routeCalls: '-', smsStatus: null, smsRegister: false, smsGear: true },
   { phone: '(478) 834-8000', type: 'ELI+ Payments AI', leadSource: '', forwardPreference: 'Office Contacts', routeCalls: '-', smsStatus: null, smsRegister: false, smsGear: true },
+  { phone: '(832) 419-7702', type: 'Maintenance AI', leadSource: '', forwardPreference: 'Office Contacts', routeCalls: '-', smsStatus: null, smsRegister: false, smsGear: true },
+  { phone: '(346) 227-8841', type: 'SMS Only', leadSource: '', forwardPreference: 'Office Contacts', routeCalls: '-', smsStatus: null, smsRegister: false, smsGear: true },
 ]
 
 const additionalPhoneNumbers = [
@@ -81,6 +87,76 @@ function PillButton({ label }: { label: string }) {
 
 const th = 'text-left font-normal text-[#6b6f76] text-[11px] px-3 py-[9px] whitespace-nowrap'
 const td = 'text-left text-[#55575c] text-[11px] px-3 py-[9px] whitespace-nowrap'
+
+function VanityNumbersTable({ rows }: { rows: VanityNumber[] }) {
+  return (
+    <div className="border border-[#e6e6e9] rounded-[4px] overflow-x-auto">
+      <table className="w-full min-w-[1180px] border-collapse">
+        <thead>
+          <tr className="border-b border-[#e6e6e9]">
+            <th className={`${th} pl-4 min-w-[110px]`}>Phone Number</th>
+            <th className={`${th} min-w-[110px]`}>Type</th>
+            <th className={`${th} min-w-[140px]`}>
+              <span className="inline-flex items-center gap-1.5">Lead Source <HelpChip /></span>
+            </th>
+            <th className={`${th} min-w-[130px]`}>Forward Preference</th>
+            <th className={`${th} min-w-[130px]`}>Route Calls</th>
+            <th className={`${th} min-w-[170px]`}>
+              <span className="inline-flex items-center gap-1.5">SMS Registration Status <HelpChip /></span>
+            </th>
+            <th className={`${th} min-w-[120px]`}>
+              <span className="inline-flex items-center gap-1.5">SMS <HelpChip /></span>
+            </th>
+            <th className={`${th} min-w-[120px]`}>Outbound Default</th>
+            <th className={`${th} min-w-[110px]`}>Expiration Date</th>
+            <th className={`${th} min-w-[70px]`}>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((item, idx) => (
+            <tr key={idx} className="border-b border-[#ededf0] last:border-b-0">
+              <td className={`${td} pl-4`}>{item.phone}</td>
+              <td className={td}>{item.type}</td>
+              <td className={td}>{item.leadSource}</td>
+              <td className={td}>{item.forwardPreference}</td>
+              <td className={td}>{item.routeCalls}</td>
+              <td className="px-3 py-[9px]">
+                {item.smsStatus === 'failed' && (
+                  <span className="inline-flex items-center gap-1.5">
+                    <TriangleAlert className="w-[13px] h-[13px] text-[#d64541]" strokeWidth={2} />
+                    <span className="text-[11px] text-[#d64541]">Failed</span>
+                    <HelpChip />
+                  </span>
+                )}
+              </td>
+              <td className="px-3 py-[6px]">
+                <span className="inline-flex items-center gap-2.5">
+                  {item.smsRegister && (
+                    <button className="rounded-[4px] border border-[#cfd0d4] bg-white px-2.5 py-[3px] text-[11px] text-[#3e3f42] shadow-sm cursor-pointer hover:bg-[#f7f7f8]">
+                      Register
+                    </button>
+                  )}
+                  {item.smsGear && (
+                    <Settings className="w-[14px] h-[14px] text-[#a8b530] cursor-pointer" strokeWidth={1.75} />
+                  )}
+                </span>
+              </td>
+              <td className={td}></td>
+              <td className={td}></td>
+              <td className="px-3 py-[9px]">
+                <span className="inline-flex items-center gap-2.5">
+                  <RotateCw className="w-[13px] h-[13px] text-[#4a9b62] cursor-pointer" strokeWidth={2} />
+                  <Pencil className="w-[13px] h-[13px] text-[#e8c33f] cursor-pointer" strokeWidth={2} fill="#e8c33f" />
+                  <EllipsisVertical className="w-[14px] h-[14px] text-[#55575c] cursor-pointer" strokeWidth={2} />
+                </span>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
 
 export function ContactMethodsSettings() {
   return (
@@ -143,10 +219,10 @@ export function ContactMethodsSettings() {
           </div>
         </section>
 
-        {/* Vanity Phone Numbers */}
+        {/* Call Tracking Vanity Numbers */}
         <section className="bg-white border border-[#e3e3e6] rounded-[6px] px-3.5 pt-3 pb-3.5 mb-4">
           <div className="flex items-center justify-between mb-3 pl-1">
-            <SectionTitle title="Vanity Phone Numbers" />
+            <SectionTitle title="Call Tracking Vanity Numbers" />
             <PillButton label="Request Vanity Number" />
           </div>
 
@@ -161,71 +237,17 @@ export function ContactMethodsSettings() {
             </div>
           </div>
 
-          <div className="border border-[#e6e6e9] rounded-[4px] overflow-x-auto">
-            <table className="w-full min-w-[1180px] border-collapse">
-              <thead>
-                <tr className="border-b border-[#e6e6e9]">
-                  <th className={`${th} pl-4 min-w-[110px]`}>Phone Number</th>
-                  <th className={`${th} min-w-[110px]`}>Type</th>
-                  <th className={`${th} min-w-[140px]`}>
-                    <span className="inline-flex items-center gap-1.5">Lead Source <HelpChip /></span>
-                  </th>
-                  <th className={`${th} min-w-[130px]`}>Forward Preference</th>
-                  <th className={`${th} min-w-[130px]`}>Route Calls</th>
-                  <th className={`${th} min-w-[170px]`}>
-                    <span className="inline-flex items-center gap-1.5">SMS Registration Status <HelpChip /></span>
-                  </th>
-                  <th className={`${th} min-w-[120px]`}>
-                    <span className="inline-flex items-center gap-1.5">SMS <HelpChip /></span>
-                  </th>
-                  <th className={`${th} min-w-[120px]`}>Outbound Default</th>
-                  <th className={`${th} min-w-[110px]`}>Expiration Date</th>
-                  <th className={`${th} min-w-[70px]`}>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {vanityNumbers.map((item, idx) => (
-                  <tr key={idx} className="border-b border-[#ededf0] last:border-b-0">
-                    <td className={`${td} pl-4`}>{item.phone}</td>
-                    <td className={td}>{item.type}</td>
-                    <td className={td}>{item.leadSource}</td>
-                    <td className={td}>{item.forwardPreference}</td>
-                    <td className={td}>{item.routeCalls}</td>
-                    <td className="px-3 py-[9px]">
-                      {item.smsStatus === 'failed' && (
-                        <span className="inline-flex items-center gap-1.5">
-                          <TriangleAlert className="w-[13px] h-[13px] text-[#d64541]" strokeWidth={2} />
-                          <span className="text-[11px] text-[#d64541]">Failed</span>
-                          <HelpChip />
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-3 py-[6px]">
-                      <span className="inline-flex items-center gap-2.5">
-                        {item.smsRegister && (
-                          <button className="rounded-[4px] border border-[#cfd0d4] bg-white px-2.5 py-[3px] text-[11px] text-[#3e3f42] shadow-sm cursor-pointer hover:bg-[#f7f7f8]">
-                            Register
-                          </button>
-                        )}
-                        {item.smsGear && (
-                          <Settings className="w-[14px] h-[14px] text-[#a8b530] cursor-pointer" strokeWidth={1.75} />
-                        )}
-                      </span>
-                    </td>
-                    <td className={td}></td>
-                    <td className={td}></td>
-                    <td className="px-3 py-[9px]">
-                      <span className="inline-flex items-center gap-2.5">
-                        <RotateCw className="w-[13px] h-[13px] text-[#4a9b62] cursor-pointer" strokeWidth={2} />
-                        <Pencil className="w-[13px] h-[13px] text-[#e8c33f] cursor-pointer" strokeWidth={2} fill="#e8c33f" />
-                        <EllipsisVertical className="w-[14px] h-[14px] text-[#55575c] cursor-pointer" strokeWidth={2} />
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <VanityNumbersTable rows={callTrackingNumbers} />
+        </section>
+
+        {/* OXP Communication Vanity Numbers */}
+        <section className="bg-white border border-[#e3e3e6] rounded-[6px] px-3.5 pt-3 pb-3.5 mb-4">
+          <div className="flex items-center justify-between mb-3 pl-1">
+            <SectionTitle title="OXP Communication Vanity Numbers" />
+            <PillButton label="Request Vanity Number" />
           </div>
+
+          <VanityNumbersTable rows={oxpCommunicationNumbers} />
         </section>
 
         {/* Greetings & Voicemail */}
