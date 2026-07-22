@@ -79,9 +79,12 @@ function SectionTitle({ title }: { title: string }) {
   )
 }
 
-function PillButton({ label }: { label: string }) {
+function PillButton({ label, onClick }: { label: string; onClick?: () => void }) {
   return (
-    <button className="inline-flex items-center gap-1.5 rounded-full border border-[#cfd0d4] bg-white px-3 py-[5px] text-[11px] text-[#3e3f42] hover:bg-[#f7f7f8] cursor-pointer">
+    <button
+      onClick={onClick}
+      className="inline-flex items-center gap-1.5 rounded-full border border-[#cfd0d4] bg-white px-3 py-[5px] text-[11px] text-[#3e3f42] hover:bg-[#f7f7f8] cursor-pointer"
+    >
       <CirclePlus className="w-[13px] h-[13px] text-[#3e3f42]" strokeWidth={1.75} />
       {label}
     </button>
@@ -283,6 +286,136 @@ function OxpModalBody({ row }: { row: VanityNumber }) {
   )
 }
 
+const addVanityTypeOptions = [
+  'Please Select',
+  'Call Tracker Lead',
+  'Call Tracker Maintenance',
+  'Call Tracker Maintenance Emergency',
+]
+
+function AddVanityNumberModal({ onClose }: { onClose: () => void }) {
+  const [type, setType] = useState('Please Select')
+  const [tollFree, setTollFree] = useState(false)
+  const [areaCode, setAreaCode] = useState('')
+  const [forwardPreference, setForwardPreference] = useState('Office Contacts')
+  const [useForSms, setUseForSms] = useState(false)
+  const [expirationDate, setExpirationDate] = useState('')
+
+  const labelCls = 'w-[38%] shrink-0 pr-4 text-right text-[13px] text-[#2f3033]'
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4" onClick={onClose}>
+      <div
+        className="w-full max-w-[680px] rounded-[6px] bg-white shadow-2xl overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex items-stretch justify-between bg-[#1f1f21]">
+          <h3 className="px-4 py-3 text-[14px] font-bold text-white">Add Vanity Number</h3>
+          <div className="flex items-stretch">
+            <div className="flex items-center pr-3">
+              <span className="inline-flex items-center justify-center w-[20px] h-[20px] rounded-[3px] border border-[#8a8a8e] text-white text-[12px] font-semibold cursor-help select-none">
+                ?
+              </span>
+            </div>
+            <button
+              onClick={onClose}
+              className="flex items-center gap-2 bg-[#3a3a3d] px-4 text-[13px] text-white cursor-pointer hover:bg-[#4a4a4d]"
+            >
+              <X className="w-[14px] h-[14px]" strokeWidth={2} />
+              Close
+            </button>
+          </div>
+        </div>
+
+        {/* Body */}
+        <div className="px-4 pt-4 pb-6">
+          {/* Stepper */}
+          <div className="flex items-stretch mb-5">
+            <div className="relative flex items-center bg-[#c0392b] text-white text-[12px] font-semibold pl-4 pr-6 py-[7px]">
+              Select Preferences
+              <div className="absolute -right-[14px] top-0 h-full w-[14px] overflow-hidden">
+                <div className="absolute top-1/2 -translate-y-1/2 -left-[14px] w-[28px] h-[28px] rotate-45 bg-[#c0392b]" />
+              </div>
+            </div>
+            <div className="relative flex items-center bg-[#e8e8ea] text-[#55575c] text-[12px] pl-6 pr-6 py-[7px] ml-[1px]">
+              Request Number
+              <div className="absolute -right-[14px] top-0 h-full w-[14px] overflow-hidden">
+                <div className="absolute top-1/2 -translate-y-1/2 -left-[14px] w-[28px] h-[28px] rotate-45 bg-[#e8e8ea]" />
+              </div>
+            </div>
+          </div>
+
+          {/* Form rows */}
+          <div className="flex items-center bg-white py-2.5">
+            <label className={labelCls}>Phone Number Type:</label>
+            <ModalSelect value={type} options={addVanityTypeOptions} onChange={setType} />
+          </div>
+          <div className="flex items-center bg-[#f8f8f9] py-3">
+            <label className={labelCls}>Toll-Free:</label>
+            <YesNoToggle value={tollFree} onChange={setTollFree} />
+          </div>
+          <div className="flex items-center bg-white py-2.5">
+            <label className={labelCls}>Area Code:</label>
+            <input
+              type="text"
+              maxLength={3}
+              value={areaCode}
+              onChange={(e) => setAreaCode(e.target.value.replace(/\D/g, ''))}
+              className="w-[70px] rounded-[6px] border border-[#c9cacd] bg-white px-3 py-[7px] text-[13px] text-[#2f3033] focus:outline-none focus:border-[#8ab2e0] text-center"
+            />
+          </div>
+          <div className="flex items-center bg-[#f8f8f9] py-2.5">
+            <label className={labelCls}>Forward Preference:</label>
+            <ModalSelect value={forwardPreference} options={['Office Contacts', ...forwardPreferenceOptions.slice(1)]} onChange={setForwardPreference} />
+          </div>
+          <div className="flex items-center bg-white py-3">
+            <label className={labelCls}>Use for SMS:</label>
+            <YesNoToggle value={useForSms} onChange={setUseForSms} />
+            <span className="ml-auto pr-3"><ModalHelpChip /></span>
+          </div>
+          <div className="flex items-center bg-[#f8f8f9] py-3">
+            <label className={labelCls}>Expiration Date:</label>
+            <div className="flex items-center gap-3">
+              <input
+                type="date"
+                value={expirationDate}
+                onChange={(e) => setExpirationDate(e.target.value)}
+                className="rounded-[6px] border border-[#c9cacd] bg-white px-3 py-[6px] text-[13px] text-[#2f3033] focus:outline-none focus:border-[#8ab2e0] w-[180px]"
+              />
+              <button
+                onClick={() => setExpirationDate('')}
+                className="inline-flex items-center gap-1.5 rounded-[6px] border border-[#c9cacd] bg-white px-3 py-[6px] text-[13px] text-[#2f3033] shadow-sm cursor-pointer hover:bg-[#f7f7f8]"
+              >
+                <X className="w-[12px] h-[12px]" strokeWidth={2} />
+                Remove Expiration
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="flex items-center justify-end bg-[#efeff0] border-t border-[#dededf] px-4 py-3">
+          <div className="flex items-center gap-2.5">
+            <button
+              onClick={onClose}
+              className="rounded-[6px] bg-[#47835a] px-7 py-[8px] text-[14px] text-white cursor-pointer hover:bg-[#3e7450]"
+            >
+              Submit Request
+            </button>
+            <span className="text-[13px] text-[#55575c]">
+              or{' '}
+              <button onClick={onClose} className="text-[#4285d6] cursor-pointer hover:underline">
+                Cancel
+              </button>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function EditVanityNumberModal({ editing, onClose }: { editing: EditingRow; onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4" onClick={onClose}>
@@ -423,10 +556,12 @@ function VanityNumbersTable({ rows, onEdit }: { rows: VanityNumber[]; onEdit: (r
 
 export function ContactMethodsSettings() {
   const [editing, setEditing] = useState<EditingRow | null>(null)
+  const [showAddModal, setShowAddModal] = useState(false)
 
   return (
     <div className="min-h-screen bg-[#f0f0f1]">
       {editing && <EditVanityNumberModal key={editing.row.phone} editing={editing} onClose={() => setEditing(null)} />}
+      {showAddModal && <AddVanityNumberModal onClose={() => setShowAddModal(false)} />}
       {/* Top app bar */}
       <header className="bg-[#3c3c3e] h-[30px] flex items-center justify-between pl-3 pr-4 sticky top-0 z-10">
         <div className="flex items-center gap-2">
@@ -489,7 +624,7 @@ export function ContactMethodsSettings() {
         <section className="bg-white border border-[#e3e3e6] rounded-[6px] px-3.5 pt-3 pb-3.5 mb-4">
           <div className="flex items-center justify-between mb-3 pl-1">
             <SectionTitle title="Call Tracking Vanity Numbers" />
-            <PillButton label="Request Vanity Number" />
+            <PillButton label="Request Vanity Number" onClick={() => setShowAddModal(true)} />
           </div>
 
           {/* Info banner */}
