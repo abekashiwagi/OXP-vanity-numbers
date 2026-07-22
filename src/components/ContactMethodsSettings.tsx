@@ -314,7 +314,7 @@ function generateNumbers(code: string) {
 function AddVanityNumberModal({ section, onClose }: { section: 'callTracking' | 'oxp'; onClose: () => void }) {
   const isCallTracking = section === 'callTracking'
   const typeOptions = isCallTracking ? addCallTrackingTypeOptions : addOxpTypeOptions
-  const [step, setStep] = useState<1 | 2>(1)
+  const [step, setStep] = useState<1 | 2 | 3>(1)
   const [type, setType] = useState('Please Select')
   const [tollFree, setTollFree] = useState(false)
   const [areaCode, setAreaCode] = useState('')
@@ -470,7 +470,7 @@ function AddVanityNumberModal({ section, onClose }: { section: 'callTracking' | 
                 </>
               )}
             </>
-          ) : (
+          ) : step === 2 ? (
             <>
               {/* Step 2: Request Number */}
               <div className="flex items-center gap-3 mb-4 flex-wrap">
@@ -521,25 +521,51 @@ function AddVanityNumberModal({ section, onClose }: { section: 'callTracking' | 
                 </table>
               </div>
             </>
+          ) : (
+            <>
+              {/* Step 3: Confirmation */}
+              <div className="rounded-[6px] bg-[#e8f5e9] border border-[#c8e6c9] px-5 py-3.5 text-center">
+                <div className="flex items-start justify-center gap-2">
+                  <CircleCheck className="w-[18px] h-[18px] text-[#3e7d4e] flex-shrink-0 mt-0.5" strokeWidth={2} />
+                  <div>
+                    <p className="text-[13px] text-[#2f3033] leading-[1.5]">
+                      We are now configuring {selectedNumber !== null ? availableNumbers.find(n => n.id === selectedNumber)?.number : ''}, which can take up to ten minutes.
+                    </p>
+                    <p className="text-[13px] text-[#2f3033] leading-[1.5]">
+                      Before creating any marketing materials that use the phone number, you should test the number to make sure it routes correctly.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </>
           )}
         </div>
 
         {/* Footer */}
         <div className="flex items-center justify-end bg-[#efeff0] border-t border-[#dededf] px-4 py-3">
-          <div className="flex items-center gap-2.5">
+          {step === 3 ? (
             <button
-              onClick={step === 1 ? handleSubmitStep1 : onClose}
-              className="rounded-[6px] bg-[#47835a] px-7 py-[8px] text-[14px] text-white cursor-pointer hover:bg-[#3e7450]"
+              onClick={onClose}
+              className="rounded-[6px] bg-[#47835a] px-10 py-[8px] text-[14px] text-white cursor-pointer hover:bg-[#3e7450]"
             >
-              Submit Request
+              Okay
             </button>
-            <span className="text-[13px] text-[#55575c]">
-              or{' '}
-              <button onClick={onClose} className="text-[#4285d6] cursor-pointer hover:underline">
-                Cancel
+          ) : (
+            <div className="flex items-center gap-2.5">
+              <button
+                onClick={step === 1 ? handleSubmitStep1 : () => setStep(3)}
+                className="rounded-[6px] bg-[#47835a] px-7 py-[8px] text-[14px] text-white cursor-pointer hover:bg-[#3e7450]"
+              >
+                Submit Request
               </button>
-            </span>
-          </div>
+              <span className="text-[13px] text-[#55575c]">
+                or{' '}
+                <button onClick={onClose} className="text-[#4285d6] cursor-pointer hover:underline">
+                  Cancel
+                </button>
+              </span>
+            </div>
+          )}
         </div>
       </div>
     </div>
