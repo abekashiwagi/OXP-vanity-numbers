@@ -45,7 +45,7 @@ const oxpCommunicationNumbers: VanityNumber[] = [
   { phone: '(948) 849-2178', type: 'ELI+ Leasing AI', leadSource: '', forwardPreference: 'Office Contacts', routeCalls: '-', smsStatus: 'failed', smsRegister: true, smsGear: true },
   { phone: '(447) 223-3385', type: 'ELI+ Renewals AI', leadSource: '', forwardPreference: 'Office Contacts', routeCalls: '-', smsStatus: null, smsRegister: false, smsGear: true },
   { phone: '(478) 834-8000', type: 'ELI+ Payments AI', leadSource: '', forwardPreference: 'Office Contacts', routeCalls: '-', smsStatus: null, smsRegister: false, smsGear: true },
-  { phone: '(832) 419-7702', type: 'Maintenance AI', leadSource: '', forwardPreference: 'Office Contacts', routeCalls: '-', smsStatus: null, smsRegister: false, smsGear: true },
+  { phone: '(832) 419-7702', type: 'ELI+ Maintenance AI', leadSource: '', forwardPreference: 'Office Contacts', routeCalls: '-', smsStatus: null, smsRegister: false, smsGear: true },
   { phone: '(346) 227-8841', type: 'SMS Only', leadSource: '', forwardPreference: 'Office Contacts', routeCalls: '-', smsStatus: null, smsRegister: false, smsGear: true },
 ]
 
@@ -119,8 +119,8 @@ const oxpTypeOptions = [
   'ELI+ Leasing AI',
   'ELI+ Renewals AI',
   'ELI+ Payments AI',
+  'ELI+ Maintenance AI',
   'ELI+ Super Agent',
-  'Maintenance AI',
   'SMS Only',
   'Voice & SMS',
 ]
@@ -160,16 +160,20 @@ function ModalHelpChip() {
 }
 
 function EditVanityNumberModal({ editing, onClose }: { editing: EditingRow; onClose: () => void }) {
+  const isCallTracking = editing.section === 'callTracking'
   const [type, setType] = useState(editing.row.type)
   const [forwardPreference, setForwardPreference] = useState('Office Contact')
   const [useForSms, setUseForSms] = useState(true)
   const [outboundDefault, setOutboundDefault] = useState(false)
   const [clickToCall, setClickToCall] = useState(false)
+  const [expirationDate, setExpirationDate] = useState('')
 
-  const typeOptions = editing.section === 'oxp' ? oxpTypeOptions : callTrackingTypeOptions
+  const typeOptions = isCallTracking ? callTrackingTypeOptions : oxpTypeOptions
   const options = typeOptions.includes(type) ? typeOptions : [type, ...typeOptions]
 
   const labelCls = 'w-[38%] shrink-0 pr-4 text-right text-[13px] text-[#2f3033]'
+
+  let toggleIdx = 0
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4" onClick={onClose}>
@@ -218,21 +222,44 @@ function EditVanityNumberModal({ editing, onClose }: { editing: EditingRow; onCl
 
           <div className="h-[14px]" />
 
-          <div className="flex items-center bg-[#f8f8f9] py-3">
+          {/* Toggle rows — alternate bg starting with gray */}
+          <div className={`flex items-center py-3 ${toggleIdx++ % 2 === 0 ? 'bg-[#f8f8f9]' : 'bg-white'}`}>
             <label className={labelCls}>Use for SMS:</label>
             <YesNoToggle value={useForSms} onChange={setUseForSms} />
             <span className="ml-auto pr-3"><ModalHelpChip /></span>
           </div>
-          <div className="flex items-center bg-white py-3">
+          <div className={`flex items-center py-3 ${toggleIdx++ % 2 === 0 ? 'bg-[#f8f8f9]' : 'bg-white'}`}>
             <label className={labelCls}>Outbound Default:</label>
             <YesNoToggle value={outboundDefault} onChange={setOutboundDefault} />
             <span className="ml-auto pr-3"><ModalHelpChip /></span>
           </div>
-          <div className="flex items-center bg-[#f8f8f9] py-3">
+          <div className={`flex items-center py-3 ${toggleIdx++ % 2 === 0 ? 'bg-[#f8f8f9]' : 'bg-white'}`}>
             <label className={labelCls}>Click to Call:</label>
             <YesNoToggle value={clickToCall} onChange={setClickToCall} />
             <span className="ml-auto pr-3"><ModalHelpChip /></span>
           </div>
+
+          {isCallTracking && (
+            <div className={`flex items-center py-3 ${toggleIdx++ % 2 === 0 ? 'bg-[#f8f8f9]' : 'bg-white'}`}>
+              <label className={labelCls}>Expiration Date:</label>
+              <div className="flex items-center gap-3">
+                <input
+                  type="date"
+                  value={expirationDate}
+                  onChange={(e) => setExpirationDate(e.target.value)}
+                  placeholder="mm / dd / yyyy"
+                  className="rounded-[6px] border border-[#c9cacd] bg-white px-3 py-[6px] text-[13px] text-[#2f3033] focus:outline-none focus:border-[#8ab2e0] w-[180px]"
+                />
+                <button
+                  onClick={() => setExpirationDate('')}
+                  className="inline-flex items-center gap-1.5 rounded-[6px] border border-[#c9cacd] bg-white px-3 py-[6px] text-[13px] text-[#2f3033] shadow-sm cursor-pointer hover:bg-[#f7f7f8]"
+                >
+                  <X className="w-[12px] h-[12px]" strokeWidth={2} />
+                  Remove Expiration
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Footer */}
