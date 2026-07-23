@@ -152,13 +152,24 @@ function ModalSelect({
   )
 }
 
-function ModalHelpChip() {
+function ModalHelpChip({ tooltip }: { tooltip?: string } = {}) {
   return (
-    <span className="inline-flex items-center justify-center w-[18px] h-[18px] rounded-[4px] border border-[#a9c8ef] bg-white text-[#4285d6] text-[11px] font-semibold leading-none cursor-help select-none">
+    <span className="relative group inline-flex items-center justify-center w-[18px] h-[18px] rounded-[4px] border border-[#a9c8ef] bg-white text-[#4285d6] text-[11px] font-semibold leading-none cursor-help select-none">
       ?
+      {tooltip && (
+        <span className="invisible group-hover:visible absolute z-[70] bottom-full right-0 mb-2 w-[320px] rounded-[6px] bg-[#2f3033] text-white text-[12px] leading-[1.6] font-normal px-3.5 py-2.5 shadow-lg pointer-events-none">
+          {tooltip}
+          <span className="absolute top-full right-3 border-[6px] border-transparent border-t-[#2f3033]" />
+        </span>
+      )}
     </span>
   )
 }
+
+const TOOLTIP_SMS = 'This allows the vanity number to be configured for two-way SMS.'
+const TOOLTIP_OUTBOUND = 'When a prospect or resident first receives communication from Entrata, the number they receive it from is the outbound default. If the prospect or resident initiated a text conversation with the property, the number they text (most likely the vanity number listed on your website) is the one from which they will receive communication going forward. For marketing and tracking purposes, it is important to set your own outbound default number to something like your property website vanity number. This way, recipients do not receive it from the shortcode (51378).'
+const TOOLTIP_VOICE = 'This will activate the vanity number to be the default number that when a staff member calls a lead or resident with the Call Tracking + product Click to Call, they will be calling from this vanity number.'
+const TOOLTIP_IMMEDIATE_ACTIVATE = 'This will immediately activate all contracted ELI+ services (i.e. Payments AI, Renewals AI, Leasing AI, Maintenance AI, etc.) to this one vanity number. If you currently have ELI+ activated with separate vanity numbers, by changing or purchasing this number it will automatically switch all ELI+ services to this number and will deactivate current ELI+ vanity numbers. Please be warned that you need to be ready to go live with this vanity number before purchasing or changing the phone number type to "ELI+ Super Agent Voice."'
 
 function CallTrackingModalBody({ row }: { row: VanityNumber }) {
   const [forwardPreference, setForwardPreference] = useState('Office Contact')
@@ -201,12 +212,12 @@ function CallTrackingModalBody({ row }: { row: VanityNumber }) {
           value={row.leadSource || ''}
           className="w-[300px] rounded-[6px] border border-[#c9cacd] bg-[#f0f0f1] px-3 py-[7px] text-[13px] text-[#2f3033] cursor-default focus:outline-none"
         />
-        <span className="ml-auto pr-3"><ModalHelpChip /></span>
+        <span className="ml-auto pr-3"><ModalHelpChip tooltip="The lead source associated with this vanity number." /></span>
       </div>
       <div className="flex items-center bg-white py-3">
         <label className={labelCls}>Use for SMS:</label>
         <YesNoToggle value={useForSms} onChange={setUseForSms} />
-        <span className="ml-auto pr-3"><ModalHelpChip /></span>
+        <span className="ml-auto pr-3"><ModalHelpChip tooltip={TOOLTIP_SMS} /></span>
       </div>
       <div className="flex items-center bg-[#f8f8f9] py-3">
         <label className={labelCls}>Expiration Date:</label>
@@ -229,7 +240,53 @@ function CallTrackingModalBody({ row }: { row: VanityNumber }) {
       <div className="flex items-center bg-white py-3">
         <label className={labelCls}>AI Bailout Number:</label>
         <YesNoToggle value={aiBailout} onChange={setAiBailout} />
-        <span className="ml-auto pr-3"><ModalHelpChip /></span>
+        <span className="ml-auto pr-3"><ModalHelpChip tooltip="When enabled, this number serves as a fallback for AI-handled calls." /></span>
+      </div>
+    </div>
+  )
+}
+
+function VoiceConfirmModal({ onConfirm, onCancel }: { onConfirm: () => void; onCancel: () => void }) {
+  return (
+    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 p-4" onClick={onCancel}>
+      <div
+        className="w-full max-w-[520px] rounded-[6px] bg-white shadow-2xl overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-stretch justify-between bg-[#1f1f21]">
+          <h3 className="px-4 py-3 text-[14px] font-bold text-white">Enable Voice (Click to Call)</h3>
+          <button
+            onClick={onCancel}
+            className="flex items-center gap-2 bg-[#3a3a3d] px-4 text-[13px] text-white cursor-pointer hover:bg-[#4a4a4d]"
+          >
+            <X className="w-[14px] h-[14px]" strokeWidth={2} />
+            Close
+          </button>
+        </div>
+        <div className="px-5 pt-5 pb-6">
+          <div className="rounded-[6px] bg-[#fff8e1] border border-[#ffe082] px-4 py-3 mb-4">
+            <div className="flex items-start gap-2.5">
+              <TriangleAlert className="w-[16px] h-[16px] text-[#f59e0b] flex-shrink-0 mt-0.5" strokeWidth={2} />
+              <p className="text-[13px] text-[#2f3033] leading-[1.6]">
+                Please confirm you understand: this will activate the vanity number to be the default number that when a staff member calls a lead or resident with the Call Tracking + product Click to Call, they will be calling from this vanity number.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center justify-end gap-3 bg-[#efeff0] border-t border-[#dededf] px-5 py-3">
+          <button
+            onClick={onCancel}
+            className="rounded-[6px] border border-[#c9cacd] bg-white px-5 py-[8px] text-[13px] text-[#2f3033] shadow-sm cursor-pointer hover:bg-[#f7f7f8]"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            className="rounded-[6px] bg-[#47835a] px-6 py-[8px] text-[14px] text-white cursor-pointer hover:bg-[#3e7450]"
+          >
+            I Understand, Enable Voice
+          </button>
+        </div>
       </div>
     </div>
   )
@@ -241,6 +298,7 @@ function OxpModalBody({ row, onTypeChange }: { row: VanityNumber; onTypeChange: 
   const [useForSms, setUseForSms] = useState(true)
   const [outboundDefault, setOutboundDefault] = useState(false)
   const [clickToCall, setClickToCall] = useState(false)
+  const [showVoiceConfirm, setShowVoiceConfirm] = useState(false)
 
   const options = oxpTypeOptions.includes(type) ? oxpTypeOptions : [type, ...oxpTypeOptions]
   const labelCls = 'w-[38%] shrink-0 pr-4 text-right text-[13px] text-[#2f3033]'
@@ -250,8 +308,22 @@ function OxpModalBody({ row, onTypeChange }: { row: VanityNumber; onTypeChange: 
     onTypeChange(newType)
   }
 
+  function handleVoiceToggle(newValue: boolean) {
+    if (newValue) {
+      setShowVoiceConfirm(true)
+    } else {
+      setClickToCall(false)
+    }
+  }
+
   return (
     <div className="px-4 pt-4 pb-6">
+      {showVoiceConfirm && (
+        <VoiceConfirmModal
+          onConfirm={() => { setClickToCall(true); setShowVoiceConfirm(false) }}
+          onCancel={() => setShowVoiceConfirm(false)}
+        />
+      )}
       {/* Retest banner */}
       <div className="flex justify-end rounded-[8px] bg-[#f5f5f6] px-3 py-3 mb-4">
         <button className="inline-flex items-center gap-2 rounded-[8px] border border-[#c9cacd] bg-white px-3.5 py-[7px] text-[13px] text-[#2f3033] shadow-sm cursor-pointer hover:bg-[#f7f7f8]">
@@ -274,18 +346,28 @@ function OxpModalBody({ row, onTypeChange }: { row: VanityNumber; onTypeChange: 
       <div className="flex items-center bg-[#f8f8f9] py-3">
         <label className={labelCls}>Use for SMS:</label>
         <YesNoToggle value={useForSms} onChange={setUseForSms} />
-        <span className="ml-auto pr-3"><ModalHelpChip /></span>
+        <span className="ml-auto pr-3"><ModalHelpChip tooltip={TOOLTIP_SMS} /></span>
       </div>
       <div className="flex items-center bg-white py-3">
         <label className={labelCls}>Use For Outbound Default:</label>
         <YesNoToggle value={outboundDefault} onChange={setOutboundDefault} />
-        <span className="ml-auto pr-3"><ModalHelpChip /></span>
+        <span className="ml-auto pr-3"><ModalHelpChip tooltip={TOOLTIP_OUTBOUND} /></span>
       </div>
       <div className="flex items-center bg-[#f8f8f9] py-3">
             <label className={labelCls}>Use For Voice (Click to Call):</label>
-            <YesNoToggle value={clickToCall} onChange={setClickToCall} />
-            <span className="ml-auto pr-3"><ModalHelpChip /></span>
+            <YesNoToggle value={clickToCall} onChange={handleVoiceToggle} />
+            <span className="ml-auto pr-3"><ModalHelpChip tooltip={TOOLTIP_VOICE} /></span>
           </div>
+      {type === 'ELI+ Super Agent Voice' && (
+        <div className="flex items-center bg-white py-3">
+          <label className={labelCls}>Immediately activate as new ELI+ Super Agent vanity number:</label>
+          <div className="flex items-center gap-2">
+            <YesNoToggle value={true} onChange={() => {}} />
+            <span className="text-[11px] text-[#999] italic">(locked)</span>
+          </div>
+          <span className="ml-auto pr-3"><ModalHelpChip tooltip={TOOLTIP_IMMEDIATE_ACTIVATE} /></span>
+        </div>
+      )}
     </div>
   )
 }
@@ -316,7 +398,7 @@ function SuperAgentWarningModal({ phone, onConfirm, onCancel }: { phone: string;
             <div className="flex items-start gap-2.5">
               <TriangleAlert className="w-[16px] h-[16px] text-[#f59e0b] flex-shrink-0 mt-0.5" strokeWidth={2} />
               <p className="text-[13px] text-[#2f3033] leading-[1.6]">
-                Changing this number to <strong>ELI+ Super Agent Voice</strong> will deactivate all current ELI+ vanity numbers and transition them to this number (<strong>{phone}</strong>). An SMS will also be sent to all active SMS conversations notifying them of the number change.
+                Changing this number to <strong>ELI+ Super Agent Voice</strong> will deactivate all current ELI+ vanity numbers and transition them to this number (<strong>{phone}</strong>). An SMS will also be sent to all active SMS conversations notifying them of the number change. <strong>This action cannot be immediately reversed.</strong> Please make sure you have completed all steps and are ready to transition to this new version of ELI+.
               </p>
             </div>
           </div>
@@ -408,8 +490,10 @@ function AddVanityNumberModal({ section, onClose }: { section: 'callTracking' | 
   const [availableNumbers, setAvailableNumbers] = useState<ReturnType<typeof generateNumbers>>([])
   const [selectedNumber, setSelectedNumber] = useState<number | null>(null)
   const [step2AreaCode, setStep2AreaCode] = useState('')
+  const [immediateActivate, setImmediateActivate] = useState(false)
 
   const isEliType = type.startsWith('ELI+')
+  const isSuperAgentVoice = type === 'ELI+ Super Agent Voice'
   const labelCls = 'w-[38%] shrink-0 pr-4 text-right text-[13px] text-[#2f3033]'
 
   function handleSubmitStep1() {
@@ -491,18 +575,25 @@ function AddVanityNumberModal({ section, onClose }: { section: 'callTracking' | 
                   <div className="flex items-center bg-white py-3">
                     <label className={labelCls}>Use for Voice:</label>
                     <YesNoToggle value={useForVoice} onChange={setUseForVoice} />
-                    <span className="ml-auto pr-3"><ModalHelpChip /></span>
+                    <span className="ml-auto pr-3"><ModalHelpChip tooltip={TOOLTIP_VOICE} /></span>
                   </div>
                   <div className="flex items-center bg-[#f8f8f9] py-3">
                     <label className={labelCls}>Use for Outbound Default:</label>
                     <YesNoToggle value={outboundDefault} onChange={setOutboundDefault} />
-                    <span className="ml-auto pr-3"><ModalHelpChip /></span>
+                    <span className="ml-auto pr-3"><ModalHelpChip tooltip={TOOLTIP_OUTBOUND} /></span>
                   </div>
                   <div className="flex items-center bg-white py-3">
                     <label className={labelCls}>Use for SMS:</label>
                     <YesNoToggle value={useForSms} onChange={setUseForSms} />
-                    <span className="ml-auto pr-3"><ModalHelpChip /></span>
+                    <span className="ml-auto pr-3"><ModalHelpChip tooltip={TOOLTIP_SMS} /></span>
                   </div>
+                  {!isCallTracking && isSuperAgentVoice && (
+                    <div className="flex items-center bg-[#f8f8f9] py-3">
+                      <label className={labelCls}>Immediately activate as new ELI+ Super Agent vanity number:</label>
+                      <YesNoToggle value={immediateActivate} onChange={setImmediateActivate} />
+                      <span className="ml-auto pr-3"><ModalHelpChip tooltip={TOOLTIP_IMMEDIATE_ACTIVATE} /></span>
+                    </div>
+                  )}
                 </>
               ) : (
                 <>
@@ -527,7 +618,7 @@ function AddVanityNumberModal({ section, onClose }: { section: 'callTracking' | 
                   <div className="flex items-center bg-white py-3">
                     <label className={labelCls}>Use for SMS:</label>
                     <YesNoToggle value={useForSms} onChange={setUseForSms} />
-                    <span className="ml-auto pr-3"><ModalHelpChip /></span>
+                    <span className="ml-auto pr-3"><ModalHelpChip tooltip={TOOLTIP_SMS} /></span>
                   </div>
                   {isCallTracking && (
                     <div className="flex items-center bg-[#f8f8f9] py-3">
