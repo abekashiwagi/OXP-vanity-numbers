@@ -235,7 +235,7 @@ function CallTrackingModalBody({ row }: { row: VanityNumber }) {
   )
 }
 
-function OxpModalBody({ row }: { row: VanityNumber }) {
+function OxpModalBody({ row, onTypeChange }: { row: VanityNumber; onTypeChange: (t: string) => void }) {
   const [type, setType] = useState(row.type)
   const [forwardPreference, setForwardPreference] = useState('Office Contact')
   const [useForSms, setUseForSms] = useState(true)
@@ -244,6 +244,11 @@ function OxpModalBody({ row }: { row: VanityNumber }) {
 
   const options = oxpTypeOptions.includes(type) ? oxpTypeOptions : [type, ...oxpTypeOptions]
   const labelCls = 'w-[38%] shrink-0 pr-4 text-right text-[13px] text-[#2f3033]'
+
+  function handleTypeChange(newType: string) {
+    setType(newType)
+    onTypeChange(newType)
+  }
 
   return (
     <div className="px-4 pt-4 pb-6">
@@ -257,7 +262,7 @@ function OxpModalBody({ row }: { row: VanityNumber }) {
 
       <div className="flex items-center bg-[#f8f8f9] py-2.5">
         <label className={labelCls}>Phone Number Type:</label>
-        <ModalSelect value={type} options={options} onChange={setType} />
+        <ModalSelect value={type} options={options} onChange={handleTypeChange} />
       </div>
       <div className="flex items-center bg-white py-2.5">
         <label className={labelCls}>Forward Preference:</label>
@@ -281,6 +286,83 @@ function OxpModalBody({ row }: { row: VanityNumber }) {
             <YesNoToggle value={clickToCall} onChange={setClickToCall} />
             <span className="ml-auto pr-3"><ModalHelpChip /></span>
           </div>
+    </div>
+  )
+}
+
+function SuperAgentWarningModal({ phone, onConfirm, onCancel }: { phone: string; onConfirm: () => void; onCancel: () => void }) {
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4" onClick={onCancel}>
+      <div
+        className="w-full max-w-[640px] rounded-[6px] bg-white shadow-2xl overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex items-stretch justify-between bg-[#1f1f21]">
+          <h3 className="px-4 py-3 text-[14px] font-bold text-white">Confirm ELI+ Super Agent Transition</h3>
+          <button
+            onClick={onCancel}
+            className="flex items-center gap-2 bg-[#3a3a3d] px-4 text-[13px] text-white cursor-pointer hover:bg-[#4a4a4d]"
+          >
+            <X className="w-[14px] h-[14px]" strokeWidth={2} />
+            Close
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="px-5 pt-5 pb-6">
+          {/* Warning banner */}
+          <div className="rounded-[6px] bg-[#fff8e1] border border-[#ffe082] px-4 py-3 mb-5">
+            <div className="flex items-start gap-2.5">
+              <TriangleAlert className="w-[16px] h-[16px] text-[#f59e0b] flex-shrink-0 mt-0.5" strokeWidth={2} />
+              <p className="text-[13px] text-[#2f3033] leading-[1.6]">
+                Changing this number to <strong>ELI+ Super Agent Voice</strong> will deactivate all current ELI+ vanity numbers and transition them to this number (<strong>{phone}</strong>). An SMS will also be sent to all active SMS conversations notifying them of the number change.
+              </p>
+            </div>
+          </div>
+
+          {/* SMS Messages */}
+          <div className="mb-4">
+            <p className="text-[12px] font-semibold text-[#6b6f76] uppercase tracking-wider mb-2">SMS sent from current ELI+ vanity numbers</p>
+            <div className="rounded-[6px] bg-[#f5f5f6] border border-[#e6e6e9] px-4 py-3">
+              <p className="text-[12.5px] text-[#2f3033] leading-[1.7] italic">
+                Hi [First Name], [Property Name] is changing the phone number we use for text messages. Our new texting number is [New Phone Number].
+              </p>
+              <p className="text-[12.5px] text-[#2f3033] leading-[1.7] italic mt-2">
+                You will receive a message from the new number shortly. Please save it and use it for future text messages. Your current conversation will continue from the new number.
+              </p>
+            </div>
+          </div>
+
+          <div>
+            <p className="text-[12px] font-semibold text-[#6b6f76] uppercase tracking-wider mb-2">SMS sent from the new ELI+ Super Agent number ({phone})</p>
+            <div className="rounded-[6px] bg-[#f5f5f6] border border-[#e6e6e9] px-4 py-3">
+              <p className="text-[12.5px] text-[#2f3033] leading-[1.7] italic">
+                Hi [First Name], this is [Property Name] messaging you from our new texting number. Please save [New Phone Number] and use this number for future text messages.
+              </p>
+              <p className="text-[12.5px] text-[#2f3033] leading-[1.7] italic mt-2">
+                We have moved your current conversation here, so you can reply directly to this message to continue.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="flex items-center justify-end gap-3 bg-[#efeff0] border-t border-[#dededf] px-5 py-3">
+          <button
+            onClick={onCancel}
+            className="rounded-[6px] border border-[#c9cacd] bg-white px-5 py-[8px] text-[13px] text-[#2f3033] shadow-sm cursor-pointer hover:bg-[#f7f7f8]"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            className="rounded-[6px] bg-[#c0392b] px-6 py-[8px] text-[14px] text-white cursor-pointer hover:bg-[#a93226]"
+          >
+            Confirm Transition
+          </button>
+        </div>
+      </div>
     </div>
   )
 }
@@ -573,62 +655,85 @@ function AddVanityNumberModal({ section, onClose }: { section: 'callTracking' | 
 }
 
 function EditVanityNumberModal({ editing, onClose }: { editing: EditingRow; onClose: () => void }) {
+  const [selectedType, setSelectedType] = useState(editing.row.type)
+  const [showWarning, setShowWarning] = useState(false)
+
+  const originalType = editing.row.type
+  const isChangingToSuperAgent = editing.section === 'oxp' && selectedType === 'ELI+ Super Agent Voice' && originalType !== 'ELI+ Super Agent Voice'
+
+  function handleSave() {
+    if (isChangingToSuperAgent) {
+      setShowWarning(true)
+    } else {
+      onClose()
+    }
+  }
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4" onClick={onClose}>
-      <div
-        className="w-full max-w-[680px] rounded-[6px] bg-white shadow-2xl overflow-hidden"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="flex items-stretch justify-between bg-[#1f1f21]">
-          <h3 className="px-4 py-3 text-[14px] font-bold text-white">Edit Vanity Number</h3>
-          <div className="flex items-stretch">
-            <div className="flex items-center pr-3">
-              <span className="inline-flex items-center justify-center w-[20px] h-[20px] rounded-[3px] border border-[#8a8a8e] text-white text-[12px] font-semibold cursor-help select-none">
-                ?
+    <>
+      {showWarning && (
+        <SuperAgentWarningModal
+          phone={editing.row.phone}
+          onConfirm={onClose}
+          onCancel={() => setShowWarning(false)}
+        />
+      )}
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4" onClick={onClose}>
+        <div
+          className="w-full max-w-[680px] rounded-[6px] bg-white shadow-2xl overflow-hidden"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Header */}
+          <div className="flex items-stretch justify-between bg-[#1f1f21]">
+            <h3 className="px-4 py-3 text-[14px] font-bold text-white">Edit Vanity Number</h3>
+            <div className="flex items-stretch">
+              <div className="flex items-center pr-3">
+                <span className="inline-flex items-center justify-center w-[20px] h-[20px] rounded-[3px] border border-[#8a8a8e] text-white text-[12px] font-semibold cursor-help select-none">
+                  ?
+                </span>
+              </div>
+              <button
+                onClick={onClose}
+                className="flex items-center gap-2 bg-[#3a3a3d] px-4 text-[13px] text-white cursor-pointer hover:bg-[#4a4a4d]"
+              >
+                <X className="w-[14px] h-[14px]" strokeWidth={2} />
+                Close
+              </button>
+            </div>
+          </div>
+
+          {editing.section === 'callTracking' ? (
+            <CallTrackingModalBody row={editing.row} />
+          ) : (
+            <OxpModalBody row={editing.row} onTypeChange={setSelectedType} />
+          )}
+
+          {/* Footer */}
+          <div className="flex items-center justify-between bg-[#efeff0] border-t border-[#dededf] px-4 py-3">
+            <button
+              onClick={onClose}
+              className="rounded-[6px] border border-[#c9cacd] bg-white px-5 py-[8px] text-[13px] text-[#2f3033] shadow-sm cursor-pointer hover:bg-[#f7f7f8]"
+            >
+              Delete
+            </button>
+            <div className="flex items-center gap-2.5">
+              <button
+                onClick={handleSave}
+                className="rounded-[6px] bg-[#47835a] px-7 py-[8px] text-[14px] text-white cursor-pointer hover:bg-[#3e7450]"
+              >
+                Save
+              </button>
+              <span className="text-[13px] text-[#55575c]">
+                or{' '}
+                <button onClick={onClose} className="text-[#4285d6] cursor-pointer hover:underline">
+                  Cancel
+                </button>
               </span>
             </div>
-            <button
-              onClick={onClose}
-              className="flex items-center gap-2 bg-[#3a3a3d] px-4 text-[13px] text-white cursor-pointer hover:bg-[#4a4a4d]"
-            >
-              <X className="w-[14px] h-[14px]" strokeWidth={2} />
-              Close
-            </button>
-          </div>
-        </div>
-
-        {editing.section === 'callTracking' ? (
-          <CallTrackingModalBody row={editing.row} />
-        ) : (
-          <OxpModalBody row={editing.row} />
-        )}
-
-        {/* Footer */}
-        <div className="flex items-center justify-between bg-[#efeff0] border-t border-[#dededf] px-4 py-3">
-          <button
-            onClick={onClose}
-            className="rounded-[6px] border border-[#c9cacd] bg-white px-5 py-[8px] text-[13px] text-[#2f3033] shadow-sm cursor-pointer hover:bg-[#f7f7f8]"
-          >
-            Delete
-          </button>
-          <div className="flex items-center gap-2.5">
-            <button
-              onClick={onClose}
-              className="rounded-[6px] bg-[#47835a] px-7 py-[8px] text-[14px] text-white cursor-pointer hover:bg-[#3e7450]"
-            >
-              Save
-            </button>
-            <span className="text-[13px] text-[#55575c]">
-              or{' '}
-              <button onClick={onClose} className="text-[#4285d6] cursor-pointer hover:underline">
-                Cancel
-              </button>
-            </span>
           </div>
         </div>
       </div>
-    </div>
+    </>
   )
 }
 
